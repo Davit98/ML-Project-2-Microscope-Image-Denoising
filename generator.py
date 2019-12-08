@@ -56,21 +56,11 @@ class ValGenerator(Sequence):
     def __init__(self, val_source_dir, val_target_dir):
         image_suffixes = (".jpeg", ".jpg", ".png", ".bmp")
 
-        image_path_source = [p for p in Path(val_source_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
-        image_path_target = [p for p in Path(val_target_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
+        image_path_source = [p for p in sorted(Path(val_source_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
+        image_path_target = [p for p in sorted(Path(val_target_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
 
         self.image_num = len(image_path_source)
         self.data = []
-
-        # if self.image_num == 0:
-        #     raise ValueError("image dir '{}' does not include any image".format(image_dir))
-
-        # for image_path in image_paths:
-        #     y = cv2.imread(str(image_path))
-        #     h, w, _ = y.shape
-        #     y = y[:(h // 16) * 16, :(w // 16) * 16]  # for stride (maximum 16)
-        #     x = val_noise_model(y)
-        #     self.data.append([np.expand_dims(x, axis=0), np.expand_dims(y, axis=0)])
 
         for i in range(self.image_num):
             x = cv2.imread(str(image_path_source[i]))
