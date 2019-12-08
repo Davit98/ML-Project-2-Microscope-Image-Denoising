@@ -6,14 +6,12 @@ from keras.utils import Sequence
 
 
 class TrainImageGenerator(Sequence):
-    def __init__(self, train_dir, batch_size=4, image_size=512):
+    def __init__(self, source_image_dir, target_image_dir, batch_size=32, image_size=512):
         image_suffixes = (".jpeg", ".jpg", ".png", ".bmp")
-        self.source_image_paths = [p for p in sorted(Path(train_dir + "/src").glob("**/*")) if
-                                   p.suffix.lower() in image_suffixes]
-        self.target_image_paths = [p for p in sorted(Path(train_dir + "/trg").glob("**/*")) if
-                                   p.suffix.lower() in image_suffixes]
+        self.source_image_paths = [p for p in sorted(Path(source_image_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
+        self.target_image_paths = [p for p in sorted(Path(target_image_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
 
-        if len(self.source_image_paths) != len(self.target_image_paths):
+        if len(self.source_image_paths)!=len(self.target_image_paths): 
             raise ValueError("The number of source images is not equal to that of target images")
 
         self.image_num = len(self.source_image_paths)
@@ -32,23 +30,34 @@ class TrainImageGenerator(Sequence):
 
         sample_id = 0
 
-        for i in range(idx * batch_size, (idx + 1) * batch_size):
-            x[sample_id] = cv2.imread(str(self.source_image_paths[i]))
-            y[sample_id] = cv2.imread(str(self.target_image_paths[i]))
+        for k in range(idx*batch_size,(idx+1)*batch_size):
 
-            sample_id += 1
+            source_image_path = self.source_image_paths[k]
+            source_image = cv2.imread(str(source_image_path))
+            h, w, _ = source_image.shape
 
-        return x, y
+            target_image_path = self.target_image_paths[k]
+            target_image = cv2.imread(str(target_image_path))
+
+            if h >= image_size and w >= image_size:
+                h, w, _ = source_image.shape
+                i = np.random.randint(h - image_size + 1)
+                j = np.random.randint(w - image_size + 1)
+                x[sample_id] = source_image[i:i + image_size, j:j + image_size]
+                y[sample_id] = target_image[i:i + image_size, j:j + image_size]
+                
+                sample_id += 1
+
+                if sample_id == batch_size:
+                    return x, y
 
 
-class TestGenerator(Sequence):
-    def __init__(self, test_dir):
+class ValGenerator(Sequence):
+    def __init__(self, val_source_dir, val_target_dir):
         image_suffixes = (".jpeg", ".jpg", ".png", ".bmp")
 
-        image_path_source = [p for p in sorted(Path(test_dir + "src").glob("**/*"))
-                             if p.suffix.lower() in image_suffixes]
-        image_path_target = [p for p in sorted(Path(test_dir + "trg").glob("**/*"))
-                             if p.suffix.lower() in image_suffixes]
+        image_path_source = [p for p in sorted(Path(val_source_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
+        image_path_target = [p for p in sorted(Path(val_target_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
 
         self.image_num = len(image_path_source)
         self.data = []
@@ -57,9 +66,9 @@ class TestGenerator(Sequence):
             x = cv2.imread(str(image_path_source[i]))
             y = cv2.imread(str(image_path_target[i]))
 
-            x = np.expand_dims(x, axis=0)
-            y = np.expand_dims(y, axis=0)
-            self.data.append([x, y])
+            x = x.reshape(1,x.shape[0],x.shape[1],x.shape[2])
+            y = y.reshape(1,y.shape[0],y.shape[1],y.shape[2])
+            self.data.append([x,y])
 
     def __len__(self):
         return self.image_num

@@ -14,8 +14,8 @@ def get_args():
                         help="model architecture ('n2n_unet' or'srresnet' or 'unet')")
     parser.add_argument("--weight_file", type=str, required=True,
                         help="trained weight file")
-    parser.add_argument("--output_dir", type=str, required=True,
-                        help="folder to save resulting images")
+    parser.add_argument("--output_dir", type=str, default=None,
+                        help="if set, save resulting images otherwise show result using imshow")
     args = parser.parse_args()
     return args
 
@@ -41,6 +41,8 @@ def main():
     for image_path in image_paths:
         image = cv2.imread(str(image_path))
         h, w, _ = image.shape
+        # image = image[:(h // 16) * 16, :(w // 16) * 16]  # for stride (maximum 16)
+        # h, w, _ = image.shape
 
         out_image = np.zeros((h, w * 2, 3), dtype=np.uint8)
 
@@ -48,10 +50,16 @@ def main():
         denoised_image = get_image(pred[0])
 
         out_image[:, :w] = image
-        out_image[:, w: w * 2] = denoised_image
+        out_image[:, w:w * 2] = denoised_image
 
-
-        cv2.imwrite(str(output_dir.joinpath(image_path.name))[:-4] + ".png", out_image)
+        if args.output_dir:
+            cv2.imwrite(str(output_dir.joinpath(image_path.name))[:-4] + ".png", out_image)
+        else:
+            cv2.imshow("result", out_image)
+            key = cv2.waitKey(-1)
+            # "q": quit
+            if key == 113:
+                return 0
 
 
 if __name__ == '__main__':
