@@ -8,18 +8,13 @@ from keras.utils import Sequence
 class TrainImageGenerator(Sequence):
     def __init__(self, source_image_dir, target_image_dir, batch_size=32, image_size=512):
         image_suffixes = (".jpeg", ".jpg", ".png", ".bmp")
-        self.source_image_paths = [p for p in Path(source_image_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
-        self.target_image_paths = [p for p in Path(target_image_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
+        self.source_image_paths = [p for p in sorted(Path(source_image_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
+        self.target_image_paths = [p for p in sorted(Path(target_image_dir).glob("**/*")) if p.suffix.lower() in image_suffixes]
 
         if len(self.source_image_paths)!=len(self.target_image_paths): 
             raise ValueError("The number of source images is not equal to that of target images")
 
         self.image_num = len(self.source_image_paths)
-
-        # shuffle images
-        prm = np.random.permutation(self.image_num)
-        self.source_image_paths = [self.source_image_paths[elem] for elem in prm]
-        self.target_image_paths = [self.target_image_paths[elem] for elem in prm]
 
         self.batch_size = batch_size
         self.image_size = image_size
@@ -32,16 +27,16 @@ class TrainImageGenerator(Sequence):
         image_size = self.image_size
         x = np.zeros((batch_size, image_size, image_size, 3), dtype=np.uint8)
         y = np.zeros((batch_size, image_size, image_size, 3), dtype=np.uint8)
-        
+
         sample_id = 0
 
-        while True:
+        for k in range(idx*batch_size,(idx+1)*batch_size):
 
-            source_image_path = self.source_image_paths[sample_id]
+            source_image_path = self.source_image_paths[k]
             source_image = cv2.imread(str(source_image_path))
             h, w, _ = source_image.shape
 
-            target_image_path = self.target_image_paths[sample_id]
+            target_image_path = self.target_image_paths[k]
             target_image = cv2.imread(str(target_image_path))
 
             if h >= image_size and w >= image_size:
