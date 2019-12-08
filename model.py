@@ -48,12 +48,12 @@ def PSNR(y_true, y_pred):
 def get_model(model_name="srresnet"):
     if model_name == "srresnet":
         return get_srresnet_model()
-    # elif model_name == "unet":
-    #     return get_unet_model()
+    elif model_name == "unet":
+        return get_unet_model()
     elif model_name == "n2n_unet":
         return get_n2n_unet()
     else:
-        raise ValueError("model_name should be 'srresnet'or 'unet'")
+        raise ValueError("model_name should be 'n2n_unet' or 'srresnet'or 'unet'")
 
 
 # SRResNet

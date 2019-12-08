@@ -6,7 +6,7 @@ from keras.utils import Sequence
 
 
 class TrainImageGenerator(Sequence):
-    def __init__(self, source_image_dir, target_image_dir, source_noise_model, target_noise_model, batch_size=32, image_size=512):
+    def __init__(self, source_image_dir, target_image_dir, batch_size=32, image_size=512):
         image_suffixes = (".jpeg", ".jpg", ".png", ".bmp")
         self.source_image_paths = [p for p in Path(source_image_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
         self.target_image_paths = [p for p in Path(target_image_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
@@ -61,7 +61,7 @@ class TrainImageGenerator(Sequence):
 
 
 class ValGenerator(Sequence):
-    def __init__(self, val_source_dir, val_target_dir, val_noise_model):
+    def __init__(self, val_source_dir, val_target_dir):
         image_suffixes = (".jpeg", ".jpg", ".png", ".bmp")
 
         image_path_source = [p for p in Path(val_source_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
