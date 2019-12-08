@@ -103,7 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-.data/
-.BSDS300-images/
+data/**
+BSDS300-images/**
 
 
