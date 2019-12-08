@@ -11,13 +11,13 @@ class TrainImageGenerator(Sequence):
         self.source_image_paths = [p for p in Path(source_image_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
         self.target_image_paths = [p for p in Path(target_image_dir).glob("**/*") if p.suffix.lower() in image_suffixes]
 
-        if len(self.source_image_paths)!=self.target_image_paths: 
+        if len(self.source_image_paths)!=len(self.target_image_paths): 
             raise ValueError("The number of source images is not equal to that of target images")
 
         self.image_num = len(self.source_image_paths)
 
         # shuffle images
-        prm = np.random.permutation(len(self.image_num))
+        prm = np.random.permutation(self.image_num)
         self.source_image_paths = [self.source_image_paths[elem] for elem in prm]
         self.target_image_paths = [self.target_image_paths[elem] for elem in prm]
 
@@ -48,12 +48,9 @@ class TrainImageGenerator(Sequence):
                 h, w, _ = source_image.shape
                 i = np.random.randint(h - image_size + 1)
                 j = np.random.randint(w - image_size + 1)
-                clean_patch_s = source_image[i:i + image_size, j:j + image_size]
-                clean_patch_t = target_image[i:i + image_size, j:j + image_size]
+                x[sample_id] = source_image[i:i + image_size, j:j + image_size]
+                y[sample_id] = target_image[i:i + image_size, j:j + image_size]
                 
-                x[sample_id] = self.source_noise_model(clean_patch_s)
-                y[sample_id] = self.target_noise_model(clean_patch_t)
-
                 sample_id += 1
 
                 if sample_id == batch_size:

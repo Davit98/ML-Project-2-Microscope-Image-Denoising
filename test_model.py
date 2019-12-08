@@ -44,13 +44,13 @@ def main():
         # image = image[:(h // 16) * 16, :(w // 16) * 16]  # for stride (maximum 16)
         # h, w, _ = image.shape
 
-        out_image = np.zeros((h, w * 3, 3), dtype=np.uint8)
-        noise_image = val_noise_model(image)
-        pred = model.predict(np.expand_dims(noise_image, 0))
+        out_image = np.zeros((h, w * 2, 3), dtype=np.uint8)
+
+        pred = model.predict(np.expand_dims(image, 0))
         denoised_image = get_image(pred[0])
+
         out_image[:, :w] = image
-        out_image[:, w:w * 2] = noise_image
-        out_image[:, w * 2:] = denoised_image
+        out_image[:, w:w * 2] = denoised_image
 
         if args.output_dir:
             cv2.imwrite(str(output_dir.joinpath(image_path.name))[:-4] + ".png", out_image)
@@ -64,3 +64,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+
