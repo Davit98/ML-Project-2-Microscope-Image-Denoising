@@ -23,33 +23,24 @@ class TrainImageGenerator(Sequence):
         return self.image_num // self.batch_size
 
     def __getitem__(self, idx):
+
         batch_size = self.batch_size
         image_size = self.image_size
-        x = np.zeros((batch_size, image_size, image_size, 3), dtype=np.uint8)
-        y = np.zeros((batch_size, image_size, image_size, 3), dtype=np.uint8)
-
-        sample_id = 0
+        x = np.zeros((batch_size, image_size, image_size, 1), dtype=np.uint8)
+        y = np.zeros((batch_size, image_size, image_size, 1), dtype=np.uint8)
 
         for k in range(idx*batch_size,(idx+1)*batch_size):
 
             source_image_path = self.source_image_paths[k]
-            source_image = cv2.imread(str(source_image_path))
-            h, w, _ = source_image.shape
+            source_image = cv2.imread(str(source_image_path),cv2.IMREAD_GRAYSCALE).reshape(image_size,image_size,1)
 
             target_image_path = self.target_image_paths[k]
-            target_image = cv2.imread(str(target_image_path))
+            target_image = cv2.imread(str(target_image_path),cv2.IMREAD_GRAYSCALE).reshape(image_size,image_size,1)
 
-            if h >= image_size and w >= image_size:
-                h, w, _ = source_image.shape
-                i = np.random.randint(h - image_size + 1)
-                j = np.random.randint(w - image_size + 1)
-                x[sample_id] = source_image[i:i + image_size, j:j + image_size]
-                y[sample_id] = target_image[i:i + image_size, j:j + image_size]
+            x[k-idx*batch_size] = source_image
+            y[k-idx*batch_size] = target_image
                 
-                sample_id += 1
-
-                if sample_id == batch_size:
-                    return x, y
+        return x, y
 
 
 class ValGenerator(Sequence):
@@ -63,11 +54,11 @@ class ValGenerator(Sequence):
         self.data = []
 
         for i in range(self.image_num):
-            x = cv2.imread(str(image_path_source[i]))
-            y = cv2.imread(str(image_path_target[i]))
+            x = cv2.imread(str(image_path_source[i]),cv2.IMREAD_GRAYSCALE)
+            y = cv2.imread(str(image_path_target[i]),cv2.IMREAD_GRAYSCALE)
 
-            x = x.reshape(1,x.shape[0],x.shape[1],x.shape[2])
-            y = y.reshape(1,y.shape[0],y.shape[1],y.shape[2])
+            x = x.reshape(1,x.shape[0],x.shape[1],1)
+            y = y.reshape(1,y.shape[0],y.shape[1],1)
             self.data.append([x,y])
 
     def __len__(self):

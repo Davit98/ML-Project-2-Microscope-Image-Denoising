@@ -39,12 +39,11 @@ def main():
     image_paths = list(Path(image_dir).glob("*.*"))
 
     for image_path in image_paths:
-        image = cv2.imread(str(image_path))
-        h, w, _ = image.shape
-        # image = image[:(h // 16) * 16, :(w // 16) * 16]  # for stride (maximum 16)
-        # h, w, _ = image.shape
+        image = cv2.imread(str(image_path),cv2.IMREAD_GRAYSCALE)
+        h, w = image.shape
+        image = image.reshape(h,w,1)
 
-        out_image = np.zeros((h, w * 2, 3), dtype=np.uint8)
+        out_image = np.zeros((h, w * 2, 1), dtype=np.uint8)
 
         pred = model.predict(np.expand_dims(image, 0))
         denoised_image = get_image(pred[0])

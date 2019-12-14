@@ -124,14 +124,14 @@ def get_unet_model(input_channel_num=3, out_ch=3, start_ch=64, depth=4, inc_rate
 
     return model
 
-def get_n2n_unet(input_channels_num = 3, output_channels_num = 3, image_size = 512):
+def get_n2n_unet(input_channels_num = 1, output_channels_num = 1, image_size = 512):
 
     def conv_with_leaky_relu(filters,kernel_size,padding,alpha,input):
-        conv = Conv2D(filters, kernel_size, padding = padding)(input)
+        conv = Conv2D(filters, kernel_size, padding = padding, kernel_initializer = 'he_normal')(input)
         return LeakyReLU(alpha=alpha)(conv)
 
     def deconv_with_leaky_relu(filters,kernel_size,padding,alpha,input):
-        dec_conv = Conv2D(filters, kernel_size, padding = padding)(input)
+        dec_conv = Conv2D(filters, kernel_size, padding = padding, kernel_initializer = 'he_normal')(input)
         return LeakyReLU(alpha=alpha)(dec_conv)
 
 

@@ -99,8 +99,10 @@ def main():
     callbacks.append(ModelCheckpoint(str(output_path) + "/weights.{epoch:03d}-{val_loss:.3f}-{val_PSNR:.5f}.hdf5",
                                      monitor="val_loss",
                                      verbose=1,
-                                     mode="min",
-                                     save_best_only=True))
+                                     period = 10)
+                                     # mode="min",
+                                     # save_best_only=True)
+                    )
 
     # tensorboard --logdir='logs/'
     NAME = "Noise2Noise-Biology-{}".format(int(time.time()))
