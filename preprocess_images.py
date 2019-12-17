@@ -1,3 +1,4 @@
+import argparse
 import nd2reader
 import matplotlib.pyplot as plt
 import os
@@ -23,7 +24,7 @@ def read_data(reader, data_path):
     filenames = []
     for filename in sorted(listdir(data_path)):
         if filename.endswith('.nd2'):
-            samples.append(reader(data_path + filename))
+            samples.append(reader(data_path + "/" + filename))
             filenames.append(filename)
     return samples, filenames
 
@@ -134,15 +135,6 @@ def clean_volumes(volume_1, volume_2):
     return volume_1_cleaned, volume_2_cleaned
 
 
-# def save_img_grayscale(img, sample_index, channel, z, frame, augment_ind, path):  # Join all these arguments in one
-#     # image_name = 'image_s' + str(sample_index) + '_c' + str(channel) + '_z' + str(z) + '_f' + str(frame) + '_' + str(
-#     #     augment_ind) + '.jpg'
-#     image_name = f"image_s{sample_index}_c{channel}_z{z}_f{frame}_{str(augment_ind)}.jpg"
-#     file_path = path + '/' + image_name
-#     #     imageio.imwrite(path,np.array(img,dtype=np.uint8))
-#     plt.imsave(file_path, img, cmap='gray')
-#     return True
-
 def save_img_grayscale(img, filename):
     """
     Save image in grayscale format.
@@ -167,31 +159,41 @@ def save_volume(volume, path):
     return True
 
 
-def create_folders(dataset_path):  # TODO Refactor, make shorter
+def create_folders(dataset_path):
     """
     Create folders for dataset.
-    :param dataset_path: dataset's path where folders will be created.
+    :param dataset_path: dataset's path where the folders will be created.
     :return: 'True' if folders are successfully created.
     """
-    dataset_folders = [dataset_path,
-                       f"{dataset_path}/green",
-                       f"{dataset_path}/green/train",
-                       f"{dataset_path}/green/train/src",
-                       f"{dataset_path}/green/train/trg",
-                       f"{dataset_path}/green/val",
-                       f"{dataset_path}/green/val/src",
-                       f"{dataset_path}/green/val/trg",
+    os.mkdir(dataset_path)
 
-                       f"{dataset_path}/red",
-                       f"{dataset_path}/red/train",
-                       f"{dataset_path}/red/train/src",
-                       f"{dataset_path}/red/train/trg",
-                       f"{dataset_path}/red/val",
-                       f"{dataset_path}/red/val/src",
-                       f"{dataset_path}/red/val/trg"]
+    for channel in ["green", "red"]:
+        os.mkdir(f"{dataset_path}/{channel}")
+        for train_or_val in ["train", "val"]:
+            os.mkdir(f"{dataset_path}/{channel}/{train_or_val}", )
+            for src_or_trg in ["src", "trg"]:
+                os.mkdir(f"{dataset_path}/{channel}/{train_or_val}/{src_or_trg}", )
 
-    for folder in dataset_folders:
-        os.mkdir(folder)
+    # TODO delete
+    # dataset_folders = [dataset_path,
+    #                    f"{dataset_path}/green",
+    #                    f"{dataset_path}/green/train",
+    #                    f"{dataset_path}/green/train/src",
+    #                    f"{dataset_path}/green/train/trg",
+    #                    f"{dataset_path}/green/val",
+    #                    f"{dataset_path}/green/val/src",
+    #                    f"{dataset_path}/green/val/trg",
+    #
+    #                    f"{dataset_path}/red",
+    #                    f"{dataset_path}/red/train",
+    #                    f"{dataset_path}/red/train/src",
+    #                    f"{dataset_path}/red/train/trg",
+    #                    f"{dataset_path}/red/val",
+    #                    f"{dataset_path}/red/val/src",
+    #                    f"{dataset_path}/red/val/trg"]
+    #
+    # for folder in dataset_folders:
+    #     os.mkdir(folder)
 
     return True
 
@@ -231,91 +233,15 @@ def generate_dataset(samples, param, dataset_path):
                 assert (len(volume_1) == len(volume_2))
                 print(f"Channel: {channel_name}, Frames: {pair}, Number of samples: {len(volume_1)}")
 
-                train_or_test = "val" if is_test else "train"
-                path_1 = f"{dataset_path}/{channel_name}/{train_or_test}/src/sample_{sample_ind}_pair{pair_ind}"
-                path_2 = f"{dataset_path}/{channel_name}/{train_or_test}/trg/sample_{sample_ind}_pair{pair_ind}"
+                train_or_val = "val" if is_test else "train"
+                # TODO compute path ony once
+                path_src = f"{dataset_path}/{channel_name}/{train_or_val}/src/sample_{sample_ind}_pair{pair_ind}"
+                path_trg = f"{dataset_path}/{channel_name}/{train_or_val}/trg/sample_{sample_ind}_pair{pair_ind}"
 
-                save_volume(volume_1, path_1)
-                save_volume(volume_2, path_2)
+                save_volume(volume_1, path_src)
+                save_volume(volume_2, path_trg)
 
     return True
-
-#
-# def save_dataset(data_type, filenames, params, exp_name):  # TODO refactor
-#     """
-#     Saves dataset
-#     :param data_type: type of images, possible options: '30ms', '5ms'
-#     :param filenames:
-#     :param params:
-#     :param exp_name:
-#     :return:
-#     """
-#     possible_data_types = ['30ms', '5ms']
-#     if data_type not in possible_data_types:
-#         raise ValueError("data_type should be '30ms' or '5ms'")
-#
-#     DATA_PATH = exp_name + '_data_' + data_type
-#
-#     SOURCE_PATH = '/source'
-#     TARGET_PATH = '/target'
-#
-#     if not os.path.exists(DATA_PATH):
-#         os.mkdir(DATA_PATH)
-#         os.mkdir(DATA_PATH + SOURCE_PATH)
-#         os.mkdir(DATA_PATH + TARGET_PATH)
-#         os.mkdir(DATA_PATH + SOURCE_PATH + '/channel0')
-#         os.mkdir(DATA_PATH + SOURCE_PATH + '/channel1')
-#         os.mkdir(DATA_PATH + TARGET_PATH + '/channel0')
-#         os.mkdir(DATA_PATH + TARGET_PATH + '/channel1')
-#
-#     file_indices = [i for i, elem in enumerate(filenames) if data_type in elem]
-#
-#     for c in range(2):
-#         path1 = os.getcwd() + '/' + DATA_PATH + SOURCE_PATH + '/channel' + str(c)
-#         path2 = os.getcwd() + '/' + DATA_PATH + TARGET_PATH + '/channel' + str(c)
-#
-#         volumes = []
-#         for file_index in file_indices:
-#
-#             is_test = file_index == file_indices[0]
-#
-#             for i in range(4):
-#                 volumes.append(get_volume(samples[file_index], channel=c, frame=i))
-#
-#             pairs = [(0, 2), (1, 3)]
-#
-#             if is_test:
-#                 pairs = [(1, 3)]
-#
-#                 TEST_SET_PATH = DATA_PATH + '/test_for_channel' + str(c)
-#                 os.mkdir(TEST_SET_PATH)
-#
-#                 for ind, elem in enumerate(volumes[0]):
-#                     save_img_grayscale(elem, file_index, c, ind, 0, '_', TEST_SET_PATH)
-#
-#                 for ind, elem in enumerate(volumes[2]):
-#                     save_img_grayscale(elem, file_index, c, ind, 2, '_', TEST_SET_PATH)
-#
-#             if params['clean']:
-#                 for p in pairs:
-#                     volumes[p[0]], volumes[p[1]] = clean_volumes(volumes[p[0]], volumes[p[1]])
-#
-#             if params['align']:
-#                 for p in pairs:
-#                     volumes[p[0]], volumes[p[1]] = align_volumes(volumes[p[0]], volumes[p[1]])
-#
-#             if params['augment']:
-#                 for p in pairs:
-#                     volumes[p[0]], volumes[p[1]] = augment_volumes(volumes[p[0]], volumes[p[1]])
-#
-#             for i, each in enumerate(volumes):
-#                 if i == 0 or i == 1:
-#                     path = path1
-#                 else:
-#                     path = path2
-#
-#                 for ind, elem in enumerate(each):
-#                     save_img_grayscale(elem, file_index, c, ind // 4 + 1, i, ind % 4, path)
 
 
 def delete_dataset(dataset_folder):
@@ -328,14 +254,35 @@ def delete_dataset(dataset_folder):
         shutil.rmtree(dataset_folder, ignore_errors=True)
 
 
+def get_args():
+    parser = argparse.ArgumentParser(description="preprocess .nd2 images",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--data_dir", type=str, required=True,
+                        help="samples files dir (.nd2 format)")
+    parser.add_argument("--data_type", type=str, default="",
+                        help="defines which type of images to use. Can be '30ms', '5ms'. "
+                             "If arg is not provided all data is used")
+    args = parser.parse_args()
+
+    return args
+
+
 def main():
-    DATA_PATH = "data/"
-    DATA_TYPE = "5ms"
+    """
+    Generates dataset with pre-processing steps done from sample files
+    :return:
+    """
+    args = get_args()
+    print(args)
+    data_dir = args.data_dir
+    data_type = args.data_type
 
     reader = nd2reader.ND2Reader
-    samples, filenames = read_data(reader, DATA_PATH)
-    print(f"Found in total {len(filenames)} files:")
-    print(*filenames, sep="\n")
+    samples, filenames = read_data(reader, data_dir)
+    if data_type:  # Filter only needed samples
+        file_indices = [ind for ind, filename in enumerate(filenames) if data_type in filename]
+        samples = [samples[ind] for ind in file_indices]
+    print(f"Found in total {len(samples)} files:")
 
     # Experiment params
     params = [{'clean': False, 'align': True, 'augment': False},
@@ -343,14 +290,15 @@ def main():
               {'clean': False, 'align': True, 'augment': True},
               {'clean': True, 'align': True, 'augment': True}]
 
-    file_indices = [ind for ind, filename in enumerate(filenames) if DATA_TYPE in filename]
-    interested_samples = [samples[ind] for ind in file_indices]
-
     for experiment_ind, param in enumerate(params):
         experiment_name = "_".join([key for key, el in param.items() if el])
 
         print(f"Generating the dataset for experiment {experiment_name}")
-        dataset_path = f"{experiment_name}_data_{DATA_TYPE}"
+        dataset_path = f"{experiment_name}_data_{data_type}"
 
         delete_dataset(dataset_path)
-        generate_dataset(interested_samples, param, dataset_path)
+        generate_dataset(samples, param, dataset_path)
+
+
+if __name__ == '__main__':
+    main()

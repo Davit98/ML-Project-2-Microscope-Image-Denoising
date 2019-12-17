@@ -7,10 +7,13 @@ IMAGE_FORMATS = (".jpeg", ".jpg", ".png", ".bmp")
 
 
 class TrainImageGenerator(Sequence):
-    def __init__(self, source_image_dir, target_image_dir, batch_size=4, image_size=512):
-        self.source_image_paths = [p for p in sorted(Path(source_image_dir).glob("**/*")) if
+    """
+    Generator for train set of images
+    """
+    def __init__(self, train_image_dir, batch_size=4, image_size=512):
+        self.source_image_paths = [p for p in sorted(Path(train_image_dir + "/src").glob("**/*")) if
                                    p.suffix.lower() in IMAGE_FORMATS]
-        self.target_image_paths = [p for p in sorted(Path(target_image_dir).glob("**/*")) if
+        self.target_image_paths = [p for p in sorted(Path(train_image_dir + "/trg").glob("**/*")) if
                                    p.suffix.lower() in IMAGE_FORMATS]
 
         if len(self.source_image_paths) != len(self.target_image_paths):
@@ -43,10 +46,13 @@ class TrainImageGenerator(Sequence):
         return x, y
 
 
-class ValGenerator(Sequence):
-    def __init__(self, val_source_dir, val_target_dir):
-        image_path_source = [p for p in sorted(Path(val_source_dir).glob("**/*")) if p.suffix.lower() in IMAGE_FORMATS]
-        image_path_target = [p for p in sorted(Path(val_target_dir).glob("**/*")) if p.suffix.lower() in IMAGE_FORMATS]
+class ValImageGenerator(Sequence):
+    """
+    Generator for validation set of images
+    """
+    def __init__(self, val_image_dir):
+        image_path_source = [p for p in sorted(Path(val_image_dir + "/src").glob("**/*")) if p.suffix.lower() in IMAGE_FORMATS]
+        image_path_target = [p for p in sorted(Path(val_image_dir + "/trg").glob("**/*")) if p.suffix.lower() in IMAGE_FORMATS]
 
         self.image_num = len(image_path_source)
         self.data = []

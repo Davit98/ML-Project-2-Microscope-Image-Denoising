@@ -3,12 +3,15 @@ import numpy as np
 from pathlib import Path
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint, TensorBoard
 from keras.optimizers import Adam
-from model import get_model, PSNR, L0Loss, UpdateAnnealingParameter
-from generator import TrainImageGenerator, ValGenerator
-import time
+from model import get_model, PSNR, L0Loss, UpdateAnnealingParameter  # TODO delete
+from generator import TrainImageGenerator, ValImageGenerator
+from time import strftime, gmtime
 
 
 class Schedule:
+    """
+    Scheduler for decreasing learning rate over epochs
+    """
     def __init__(self, nb_epochs, initial_lr):
         self.epochs = nb_epochs
         self.initial_lr = initial_lr
@@ -26,14 +29,10 @@ class Schedule:
 def get_args():
     parser = argparse.ArgumentParser(description="train noise2noise model",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--source_image_dir", type=str, required=True,
-                        help="source image dir")
-    parser.add_argument("--target_image_dir", type=str, required=True,
-                        help="target image dir")
-    parser.add_argument("--source_val_dir", type=str, required=True,
-                        help="validation set source image dir")
-    parser.add_argument("--target_val_dir", type=str, required=True,
-                        help="validation set target image dir")
+    parser.add_argument("--train_image_dir", type=str, required=True,
+                        help="train set image dir")
+    parser.add_argument("--val_image_dir", type=str, required=True,
+                        help="validation set image dir")
     parser.add_argument("--image_size", type=int, default=512,
                         help="training patch size")
     parser.add_argument("--batch_size", type=int, default=4,
@@ -58,14 +57,16 @@ def get_args():
 
 
 def main():
+    """
+    Training model
+    :return:
+    """
     args = get_args()
     experiment_desc = args.desc
 
     # Files and paths
-    source_image_dir = args.source_image_dir
-    target_image_dir = args.target_image_dir
-    source_val_dir = args.source_val_dir
-    target_val_dir = args.target_val_dir
+    train_image_dir = args.source_image_dir
+    val_image_dir = args.source_val_dir
     output_path = Path(__file__).resolve().parent.joinpath(args.output_path)
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -82,36 +83,36 @@ def main():
         model.load_weights(args.weight)
     opt = Adam(lr=lr)
 
-    callbacks = []  # TODO move on some lines below
-
-    # if loss_type == "l0": # TODO delete
+    # TODO delete
+    # callbacks = []
+    # if loss_type == "l0":
     #     l0 = L0Loss()
     #     callbacks.append(UpdateAnnealingParameter(l0.gamma, nb_epochs, verbose=1))
     #     loss_type = l0()
 
     model.compile(optimizer=opt, loss=loss_type, metrics=[PSNR])
 
-    callbacks.append(LearningRateScheduler(schedule=Schedule(nb_epochs, lr)))  # TODO delete
+    callbacks = []
+    # Decrease learning rate over epochs
+    callbacks.append(LearningRateScheduler(schedule=Schedule(nb_epochs, lr)))
 
+    # Saving weights per 10 epochs
     weights_filename = str(output_path) + "/weights_" + experiment_desc + ".{epoch:03d}-{val_loss:.3f}.hdf5"
-    callbacks.append(ModelCheckpoint(weights_filename,
-                                     monitor="val_loss",
-                                     verbose=1,
-                                     period=10)
-                     )
+    callbacks.append(ModelCheckpoint(weights_filename, monitor="val_loss", verbose=1, period=10))
 
     # Add tensorboard logs
-    NAME = "Noise2Noise-Biology-{}".format(int(time.time()))
-    tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
+    logs_filename = "logs {}".format(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+    tensorboard = TensorBoard(update_freq="epoch",
+                              write_images=True,
+                              log_dir='logs/{}'.format(logs_filename)
+                              )
     callbacks.append(tensorboard)
 
     # Form train and validation sets
-    train_generator = TrainImageGenerator(source_image_dir,
-                                          target_image_dir,
+    train_generator = TrainImageGenerator(train_image_dir,
                                           batch_size=batch_size,
                                           image_size=image_size)
-    val_generator = ValGenerator(source_val_dir,
-                                 target_val_dir)
+    val_generator = ValImageGenerator(val_image_dir)
 
     # Train
     hist = model.fit_generator(generator=train_generator,

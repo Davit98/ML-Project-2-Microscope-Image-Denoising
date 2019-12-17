@@ -9,6 +9,9 @@ import tensorflow as tf
 
 
 class L0Loss:
+    """
+    Calculates L0 norm
+    """
     def __init__(self):
         self.gamma = K.variable(2.)
 
@@ -20,7 +23,7 @@ class L0Loss:
         return calc_loss
 
 
-class UpdateAnnealingParameter(Callback):
+class UpdateAnnealingParameter(Callback):  # TODO delere
     def __init__(self, gamma, nb_epochs, verbose=0):
         super(UpdateAnnealingParameter, self).__init__()
         self.gamma = gamma
@@ -42,7 +45,12 @@ def tf_log10(x):
 
 
 def PSNR(y_true, y_pred):
-    # Compute peak signal-to-noise ratio
+    """
+    Compute peak signal-to-noise ratio
+    :param y_true: Ground truth image
+    :param y_pred: Denoised image
+    :return:
+    """
     max_pixel = 255.0
     y_pred = K.clip(y_pred, 0.0, 255.0)
     return 10.0 * tf_log10((max_pixel ** 2) / (K.mean(K.square(y_pred - y_true))))
@@ -56,7 +64,13 @@ def get_model(model_name="n2n_unet"):
 
 
 def get_n2n_unet(input_channels_num=1, output_channels_num=1, image_size=512):
-    # U-net architecture from noise2noise paper
+    """
+    U-net architecture from noise2noise paper
+    :param input_channels_num: Number of channels of input images ('1' for grayscale, '3' for rgb)
+    :param output_channels_num: Number of channels of output images ('1' for grayscale, '3' for rgb)
+    :param image_size: Image's size
+    :return: U-net model
+    """
     def conv_with_leaky_relu(filters, kernel_size, padding, alpha, input):
         conv = Conv2D(filters, kernel_size, padding=padding, kernel_initializer='he_normal')(input)
         return LeakyReLU(alpha=alpha)(conv)

@@ -6,3 +6,4 @@ __pycache__/
 # Data
 *.jpg
 *.nd2
+*.zip

@@ -15,7 +15,7 @@ def get_args():
     parser.add_argument("--weight_file", type=str, required=True,
                         help="trained weight file")
     parser.add_argument("--output_dir", type=str, required=True,
-                        help="folder to save the resulting omages")
+                        help="folder to save the resulting images")
     args = parser.parse_args()
     return args
 
@@ -26,6 +26,10 @@ def get_image(image):
 
 
 def main():
+    """
+    Test model
+    :return:
+    """
     args = get_args()
     image_dir = args.image_dir
     weight_file = args.weight_file
