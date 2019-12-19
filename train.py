@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint, TensorBoard
 from keras.optimizers import Adam
-from model import get_model, PSNR, L0Loss, UpdateAnnealingParameter  # TODO delete
+from model import get_model, PSNR
 from generator import TrainImageGenerator, ValImageGenerator
 from time import strftime, gmtime
 
@@ -82,13 +82,6 @@ def main():
     if args.weight is not None:
         model.load_weights(args.weight)
     opt = Adam(lr=lr)
-
-    # TODO delete
-    # callbacks = []
-    # if loss_type == "l0":
-    #     l0 = L0Loss()
-    #     callbacks.append(UpdateAnnealingParameter(l0.gamma, nb_epochs, verbose=1))
-    #     loss_type = l0()
 
     model.compile(optimizer=opt, loss=loss_type, metrics=[PSNR])
 

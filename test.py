@@ -5,6 +5,7 @@ import cv2
 from model import get_model
 import matplotlib.pyplot as plt
 
+
 def get_args():
     parser = argparse.ArgumentParser(description="Test trained model",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -45,36 +46,19 @@ def main():
     model.load_weights(weight_file)
 
     for image_path in image_paths:
-        # image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
-        image = np.load(str(image_path)).reshape([image_size, image_size, 1])
+        original_image = np.load(str(image_path)).reshape([image_size, image_size, 1])
 
-        out_image = np.zeros((image_size, image_size * 2, 1), dtype=np.uint8)
-
-        pred = model.predict(np.expand_dims(image, 0))
+        pred = model.predict(np.expand_dims(original_image, 0))
         denoised_image = pred[0]
 
-        np.save(str(output_dir.joinpath(image_path.name))[:-4] + "_denoised", denoised_image)
-        np.save(str(output_dir.joinpath(image_path.name))[:-4] + "_source", image)
+        # Use this to save denoised images as numpy arrays
+        # np.save(str(output_dir.joinpath(image_path.name))[:-4] + "_source", image)
+        # np.save(str(output_dir.joinpath(image_path.name))[:-4] + "_denoised", denoised_image)
 
-        # image = get_image(image)
-        # denoised_image = get_image(denoised_image)
-
-        # np.save(str(output_dir.joinpath(image_path.name))[:-4] + "_denoised_clipped", denoised_image)
-        # np.save(str(output_dir.joinpath(image_path.name))[:-4] + "_source_clipped", image)
-
-        # print(image.min(), image.max(), image.mean())
-        # print(denoised_image.min(), denoised_image.max(), denoised_image.mean())
-
-        # Place denoised image next to original one
-        out_image[:, :image_size] = image
-        out_image[:, image_size:image_size * 2] = denoised_image
-
-        out_image = out_image.reshape([image_size, image_size * 2])
-
-        # cv2.imwrite(str(output_dir.joinpath(image_path.name))[:-4] + ".png", out_image)
-        # cv2.imwrite(str(output_dir.joinpath(image_path.name))[:-4] + ".png", out_image)  # TODO change to .npy
-
-        # plt.imsave(str(output_dir.joinpath(image_path.name))[:-4] + ".jpg", out_image, cmap='gray')
+        original_image = original_image.reshape((image_size, image_size))
+        denoised_image = denoised_image.reshape((image_size, image_size))
+        plt.imsave(str(output_dir.joinpath(image_path.name))[:-4] + "_original.jpg", original_image, cmap='gray')
+        plt.imsave(str(output_dir.joinpath(image_path.name))[:-4] + "_denoised.jpg", denoised_image, cmap='gray')
 
 
 if __name__ == '__main__':

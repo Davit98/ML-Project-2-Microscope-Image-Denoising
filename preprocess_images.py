@@ -1,6 +1,5 @@
 import argparse
 import nd2reader
-import matplotlib.pyplot as plt
 import os
 import numpy as np
 from os import listdir
@@ -8,9 +7,7 @@ import shutil
 
 from skimage.feature import register_translation
 from scipy.ndimage import fourier_shift
-from skimage.util import *
 from skimage import exposure
-import cv2
 
 
 def read_data(reader, data_path):
@@ -143,7 +140,6 @@ def save_img_grayscale(img, filename):
     :return: 'True' if image is successfully saved.
     """
     np.save(filename, img)
-    # plt.imsave(filename, img, cmap="gray")
     return True
 
 
@@ -155,7 +151,6 @@ def save_volume(volume, path):
     :return: 'True' if volume is successfully saved.
     """
     for ind, image in enumerate(volume):
-        # filename = f"{path}_image_{ind}.jpg"
         filename = f"{path}_image_{ind}"
         save_img_grayscale(image, filename)
     return True
@@ -175,18 +170,6 @@ def create_folders(dataset_path):
             os.mkdir(f"{dataset_path}/{channel}/{train_or_val}", )
             for src_or_trg in ["src", "trg"]:
                 os.mkdir(f"{dataset_path}/{channel}/{train_or_val}/{src_or_trg}")
-
-    # # TODO delete
-    # dataset_folders = [dataset_path,
-    #                    f"{dataset_path}/train",
-    #                    f"{dataset_path}/train/src",
-    #                    f"{dataset_path}/train/trg",
-    #                    f"{dataset_path}/val",
-    #                    f"{dataset_path}/val/src",
-    #                    f"{dataset_path}/val/trg"]
-    #
-    # for folder in dataset_folders:
-    #     os.mkdir(folder)
 
     return True
 
@@ -228,10 +211,6 @@ def generate_dataset(samples, param, dataset_path):
                 train_or_val = "val" if is_test else "train"
                 path_src = f"{dataset_path}/{channel_name}/{train_or_val}/src/sample_{sample_ind}_pair{pair_ind}"
                 path_trg = f"{dataset_path}/{channel_name}/{train_or_val}/trg/sample_{sample_ind}_pair{pair_ind}"
-
-                # Use this to save both channels in one directory
-                # path_src = f"{dataset_path}/{train_or_val}/src/sample_{sample_ind}_channel_{channel_name}_pair_{pair_ind}"
-                # path_trg = f"{dataset_path}/{train_or_val}/trg/sample_{sample_ind}_channel_{channel_name}_pair_{pair_ind}"
 
                 save_volume(volume_1, path_src)
                 save_volume(volume_2, path_trg)
