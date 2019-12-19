@@ -135,6 +135,42 @@ def clean_volumes(volume_1, volume_2):
     return volume_1_cleaned, volume_2_cleaned
 
 
+def compute_minmax(samples):
+    min_red = np.inf
+    max_red = 0
+
+    min_green = np.inf
+    max_green = 0
+
+    for sample_ind, sample in enumerate(samples):
+        print(f"Computing min and max for sample #{sample_ind}")
+
+        for frame in range(4):
+            for i, channel in enumerate(['green', 'red']):
+                volume = get_volume(sample, channel=i, frame=frame)
+
+                if channel == 'red':
+                    for img in volume:
+                        min_red = min(min_red, img.min())
+                        max_red = max(max_red, img.max())
+                else:
+                    for img in volume:
+                        min_green = min(min_green, img.min())
+                        max_green = max(max_green, img.max())
+
+    return {'green': (min_green, max_green), 'red': (min_red, max_red)}
+
+
+def minmax_normalize_image(img, min_value, max_value):
+    res = (img - min_value) / (max_value - min_value) * 255
+    assert(res.min() >= 0 and res.max() <= 256)
+    return res
+
+
+def minmax_normalize_volume(volume, min_value, max_value):
+    return [minmax_normalize_image(img, min_value, max_value) for img in volume]
+
+
 def save_img_grayscale(img, filename):
     """
     Save image in grayscale format.
@@ -142,8 +178,8 @@ def save_img_grayscale(img, filename):
     :param filename: filename for file to save.
     :return: 'True' if image is successfully saved.
     """
-    np.save(filename, img)
-    # plt.imsave(filename, img, cmap="gray")
+    # np.save(filename, img)  # Use this to say as numpy array
+    plt.imsave(filename, img, cmap="gray")
     return True
 
 
@@ -155,8 +191,8 @@ def save_volume(volume, path):
     :return: 'True' if volume is successfully saved.
     """
     for ind, image in enumerate(volume):
-        # filename = f"{path}_image_{ind}.jpg"
-        filename = f"{path}_image_{ind}"
+        filename = f"{path}_image_{ind}.jpg"
+        # filename = f"{path}_image_{ind}"  # Use this to say as numpy array
         save_img_grayscale(image, filename)
     return True
 
@@ -202,6 +238,9 @@ def generate_dataset(samples, param, dataset_path):
     """
     create_folders(dataset_path)
 
+    # Compute min max values for the whole dataset for normalization
+    min_max_values_per_channel = compute_minmax(samples)
+
     for sample_ind, sample in enumerate(samples):
         print("Sample №{}".format(sample_ind))
 
@@ -212,6 +251,11 @@ def generate_dataset(samples, param, dataset_path):
 
                 volume_1 = get_volume(sample, channel=channel_ind, frame=pair[0])
                 volume_2 = get_volume(sample, channel=channel_ind, frame=pair[1])
+
+                # Normalize images
+                min_max_values = min_max_values_per_channel[channel_name]
+                volume_1 = minmax_normalize_volume(volume_1, min_max_values[0], min_max_values[1])
+                volume_2 = minmax_normalize_volume(volume_2, min_max_values[0], min_max_values[1])
 
                 if param.get('align'):
                     volume_1, volume_2 = align_volumes(volume_1, volume_2)
