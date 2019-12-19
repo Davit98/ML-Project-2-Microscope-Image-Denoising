@@ -18,7 +18,7 @@ To test: ```python3 test_model.py --weight_file <WEIGHTS> --image_dir <TEST_DATA
 
 #### File descriptions
 
-model.py - contains keras implementation of the custome Unet model described in the Noise2Noise paper
+model.py - contains keras implementation of the custom Unet model described in the Noise2Noise paper
 
 train.py - trains the Unet model
 
