@@ -65,8 +65,8 @@ def main():
     experiment_desc = args.desc
 
     # Files and paths
-    train_image_dir = args.source_image_dir
-    val_image_dir = args.source_val_dir
+    train_image_dir = args.train_image_dir
+    val_image_dir = args.val_image_dir
     output_path = Path(__file__).resolve().parent.joinpath(args.output_path)
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -78,7 +78,7 @@ def main():
     loss_type = args.loss
 
     # Build model
-    model = get_model(args.model)
+    model = get_model(args.model, image_size)
     if args.weight is not None:
         model.load_weights(args.weight)
     opt = Adam(lr=lr)
@@ -109,10 +109,8 @@ def main():
     callbacks.append(tensorboard)
 
     # Form train and validation sets
-    train_generator = TrainImageGenerator(train_image_dir,
-                                          batch_size=batch_size,
-                                          image_size=image_size)
-    val_generator = ValImageGenerator(val_image_dir)
+    train_generator = TrainImageGenerator(train_image_dir, batch_size=batch_size, image_size=image_size)
+    val_generator = ValImageGenerator(val_image_dir, image_size=image_size)
 
     # Train
     hist = model.fit_generator(generator=train_generator,

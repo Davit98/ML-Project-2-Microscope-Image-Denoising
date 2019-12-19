@@ -56,9 +56,9 @@ def PSNR(y_true, y_pred):
     return 10.0 * tf_log10((max_pixel ** 2) / (K.mean(K.square(y_pred - y_true))))
 
 
-def get_model(model_name="n2n_unet"):
+def get_model(model_name="n2n_unet", image_size=512):
     if model_name == "n2n_unet":
-        return get_n2n_unet()
+        return get_n2n_unet(image_size=image_size)
     else:
         raise ValueError("model_name should be 'n2n_unet'")
 

@@ -142,7 +142,8 @@ def save_img_grayscale(img, filename):
     :param filename: filename for file to save.
     :return: 'True' if image is successfully saved.
     """
-    plt.imsave(filename, img, cmap="gray")
+    np.save(filename, img)
+    # plt.imsave(filename, img, cmap="gray")
     return True
 
 
@@ -154,7 +155,8 @@ def save_volume(volume, path):
     :return: 'True' if volume is successfully saved.
     """
     for ind, image in enumerate(volume):
-        filename = f"{path}_image_{ind}.jpg"
+        # filename = f"{path}_image_{ind}.jpg"
+        filename = f"{path}_image_{ind}"
         save_img_grayscale(image, filename)
     return True
 
@@ -172,25 +174,16 @@ def create_folders(dataset_path):
         for train_or_val in ["train", "val"]:
             os.mkdir(f"{dataset_path}/{channel}/{train_or_val}", )
             for src_or_trg in ["src", "trg"]:
-                os.mkdir(f"{dataset_path}/{channel}/{train_or_val}/{src_or_trg}", )
+                os.mkdir(f"{dataset_path}/{channel}/{train_or_val}/{src_or_trg}")
 
-    # TODO delete
+    # # TODO delete
     # dataset_folders = [dataset_path,
-    #                    f"{dataset_path}/green",
-    #                    f"{dataset_path}/green/train",
-    #                    f"{dataset_path}/green/train/src",
-    #                    f"{dataset_path}/green/train/trg",
-    #                    f"{dataset_path}/green/val",
-    #                    f"{dataset_path}/green/val/src",
-    #                    f"{dataset_path}/green/val/trg",
-    #
-    #                    f"{dataset_path}/red",
-    #                    f"{dataset_path}/red/train",
-    #                    f"{dataset_path}/red/train/src",
-    #                    f"{dataset_path}/red/train/trg",
-    #                    f"{dataset_path}/red/val",
-    #                    f"{dataset_path}/red/val/src",
-    #                    f"{dataset_path}/red/val/trg"]
+    #                    f"{dataset_path}/train",
+    #                    f"{dataset_path}/train/src",
+    #                    f"{dataset_path}/train/trg",
+    #                    f"{dataset_path}/val",
+    #                    f"{dataset_path}/val/src",
+    #                    f"{dataset_path}/val/trg"]
     #
     # for folder in dataset_folders:
     #     os.mkdir(folder)
@@ -231,15 +224,22 @@ def generate_dataset(samples, param, dataset_path):
                         volume_1, volume_2 = augment_volumes(volume_1, volume_2)
 
                 assert (len(volume_1) == len(volume_2))
-                print(f"Channel: {channel_name}, Frames: {pair}, Number of samples: {len(volume_1)}")
 
                 train_or_val = "val" if is_test else "train"
-                # TODO compute path ony once
                 path_src = f"{dataset_path}/{channel_name}/{train_or_val}/src/sample_{sample_ind}_pair{pair_ind}"
                 path_trg = f"{dataset_path}/{channel_name}/{train_or_val}/trg/sample_{sample_ind}_pair{pair_ind}"
 
+                # Use this to save both channels in one directory
+                # path_src = f"{dataset_path}/{train_or_val}/src/sample_{sample_ind}_channel_{channel_name}_pair_{pair_ind}"
+                # path_trg = f"{dataset_path}/{train_or_val}/trg/sample_{sample_ind}_channel_{channel_name}_pair_{pair_ind}"
+
                 save_volume(volume_1, path_src)
                 save_volume(volume_2, path_trg)
+
+                print(f"Channel: {channel_name}, "
+                      f"Frames: {pair}, "
+                      f"Number of samples: {len(volume_1)}, "
+                      f"{train_or_val} set")
 
     return True
 
@@ -273,7 +273,6 @@ def main():
     :return:
     """
     args = get_args()
-    print(args)
     data_dir = args.data_dir
     data_type = args.data_type
 
@@ -285,10 +284,12 @@ def main():
     print(f"Found in total {len(samples)} files:")
 
     # Experiment params
-    params = [{'clean': False, 'align': True, 'augment': False},
-              {'clean': True, 'align': True, 'augment': False},
-              {'clean': False, 'align': True, 'augment': True},
-              {'clean': True, 'align': True, 'augment': True}]
+    params = [
+        {'clean': False, 'align': True, 'augment': False},
+        {'clean': True, 'align': True, 'augment': False},
+        {'clean': False, 'align': True, 'augment': True},
+        {'clean': True, 'align': True, 'augment': True}
+    ]
 
     for experiment_ind, param in enumerate(params):
         experiment_name = "_".join([key for key, el in param.items() if el])

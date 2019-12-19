@@ -3,7 +3,8 @@ import numpy as np
 import cv2
 from keras.utils import Sequence
 
-IMAGE_FORMATS = (".jpeg", ".jpg", ".png", ".bmp")
+# IMAGE_FORMATS = (".jpeg", ".jpg", ".png", ".bmp")
+IMAGE_FORMATS = ".npy"
 
 
 class TrainImageGenerator(Sequence):
@@ -35,10 +36,12 @@ class TrainImageGenerator(Sequence):
 
         for k in range(idx * batch_size, (idx + 1) * batch_size):
             source_image_path = self.source_image_paths[k]
-            source_image = cv2.imread(str(source_image_path), cv2.IMREAD_GRAYSCALE).reshape(image_size, image_size, 1)
+            # source_image = cv2.imread(str(source_image_path), cv2.IMREAD_GRAYSCALE).reshape(image_size, image_size, 1)
+            source_image = np.load(str(source_image_path)).reshape([image_size, image_size, 1])
 
             target_image_path = self.target_image_paths[k]
-            target_image = cv2.imread(str(target_image_path), cv2.IMREAD_GRAYSCALE).reshape(image_size, image_size, 1)
+            # target_image = cv2.imread(str(target_image_path), cv2.IMREAD_GRAYSCALE).reshape(image_size, image_size, 1)
+            target_image = np.load(str(target_image_path)).reshape([image_size, image_size, 1])
 
             x[k - idx * batch_size] = source_image
             y[k - idx * batch_size] = target_image
@@ -50,7 +53,7 @@ class ValImageGenerator(Sequence):
     """
     Generator for validation set of images
     """
-    def __init__(self, val_image_dir):
+    def __init__(self, val_image_dir, image_size):
         image_path_source = [p for p in sorted(Path(val_image_dir + "/src").glob("**/*")) if p.suffix.lower() in IMAGE_FORMATS]
         image_path_target = [p for p in sorted(Path(val_image_dir + "/trg").glob("**/*")) if p.suffix.lower() in IMAGE_FORMATS]
 
@@ -58,11 +61,13 @@ class ValImageGenerator(Sequence):
         self.data = []
 
         for i in range(self.image_num):
-            x = cv2.imread(str(image_path_source[i]), cv2.IMREAD_GRAYSCALE)
-            y = cv2.imread(str(image_path_target[i]), cv2.IMREAD_GRAYSCALE)
+            # x = cv2.imread(str(image_path_source[i]), cv2.IMREAD_GRAYSCALE)
+            x = np.load(str(image_path_source[i])).reshape([1, image_size, image_size, 1])
+            # y = cv2.imread(str(image_path_target[i]), cv2.IMREAD_GRAYSCALE)
+            y = np.load(str(image_path_target[i])).reshape([1, image_size, image_size, 1])
 
-            x = x.reshape(1, x.shape[0], x.shape[1], 1)
-            y = y.reshape(1, y.shape[0], y.shape[1], 1)
+            # x = x.reshape(1, x.shape[0], x.shape[1], 1)
+            # y = y.reshape(1, y.shape[0], y.shape[1], 1)
             self.data.append([x, y])
 
     def __len__(self):
