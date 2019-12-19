@@ -39,12 +39,12 @@ def get_args():
                         help="batch size")
     parser.add_argument("--nb_epochs", type=int, default=60,
                         help="number of epochs")
-    parser.add_argument("--lr", type=float, default=0.001,
+    parser.add_argument("--lr", type=float, default=0.0001,
                         help="learning rate")
     parser.add_argument("--loss", type=str, default="mse",
-                        help="loss; mse', 'mae', or 'l0' is expected")
+                        help="loss; mse', 'mae' is expected")
     parser.add_argument("--weight", type=str, default=None,
-                        help="weight file for restart")
+                        help="weight file to continue training")
     parser.add_argument("--output_path", type=str, default="weights",
                         help="weight dir")
     parser.add_argument("--model", type=str, default="n2n_unet",
