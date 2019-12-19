@@ -45,8 +45,8 @@ def main():
     model.load_weights(weight_file)
 
     for image_path in image_paths:
-        image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
-        # image = np.load(str(image_path)).reshape([image_size, image_size, 1])
+        # image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
+        image = np.load(str(image_path)).reshape([image_size, image_size, 1])
 
         out_image = np.zeros((image_size, image_size * 2, 1), dtype=np.uint8)
 
