@@ -1,4 +1,4 @@
-# Removing Noise From Microscope Images Without Fround Truth
+# Removing Noise From Microscope Images Without Ground Truth
 Learning to denoise microscope images of warm brain neurones without clean targets.  
 
 #### Prerequisites
